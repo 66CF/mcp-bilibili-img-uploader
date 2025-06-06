@@ -1,31 +1,29 @@
-# Bilibili Uploader MCP Server
+# MCP Bilibili Img Uploader
 
 ![Python Version](https://img.shields.io/badge/python-3.8+-blue.svg)
 ![License](https://img.shields.io/badge/license-MIT-green.svg)
 
-A Model Context Protocol (MCP) server that enables a Large Language Model (LLM) to upload images to Bilibili's image hosting service.
+## 简介
+一个MCP（Model Context Protocol）服务器，能让大语言模型（LLM）调用工具将本地图片上传到Bilibili图床。
 
-This server exposes tools that allow an LLM to authenticate using your Bilibili browser cookies and upload local image files, returning a direct, permanent HTTPS link. It works by replicating the API requests made by Bilibili's own web uploader.
+## 鸣谢
+- Bilibili API 交互的核心代码逻辑参考自 [bilibili-img-uploader](https://github.com/xlzy520/bilibili-img-uploader)
 
-## ✨ Features
+## 功能特点
+- B站图床
+- 直链生成
+- 基于 MCP 协议的标准化接口
+- 基于 Cookie 的身份验证
 
--   **Upload Images**: Provides a tool to upload local images (`.jpg`, `.png`, `.gif`, etc.) to Bilibili's fast and reliable CDN.
--   **Cookie-Based Authentication**: Securely uses your Bilibili session cookies to authenticate with the API, without needing your username or password.
--   **Direct Link Generation**: Returns a clean, direct HTTPS URL to the uploaded image, ready for use in Markdown, HTML, or any other application.
--   **LLM Integration**: Built as an MCP server, allowing any compatible AI agent or application (like Claude for Desktop) to use its tools.
-
-## ⚙️ Prerequisites
-
+## 系统要求
 -   Python 3.8 or higher.
 -   `pip` for installing Python packages.
 -   An active Bilibili account.
 -   An MCP client application, such as [Claude for Desktop](https://www.claude.ai/download).
 
-## 🚀 Installation
-
+## 快速开始
 1.  **Clone the repository or save the script:**
     Save the server code as `bilibili_uploader.py`.
-
 2.  **Install the required dependencies:**
     Open your terminal and run the following command to install the necessary packages.
 
@@ -33,45 +31,30 @@ This server exposes tools that allow an LLM to authenticate using your Bilibili 
     pip install "mcp[cli]" httpx
     ```
 
-## 🔑 Configuration: Getting Your Bilibili Cookies
+### 获取Bilibili Cookies
+1.  在浏览器中登录 [www.bilibili.com](https://www.bilibili.com)。
+2.  按 `F12` (或 Mac上的 `Cmd+Option+I`) 打开开发者工具。
+3.  找到 `Application` (Chrome/Edge) 或 `Storage` (Firefox) 选项卡。
+4.  在左侧菜单的 `Cookies` 下，选择 `https://www.bilibili.com`。
+5.  找到并复制以下两项的 **Value** (值):
+    *   `SESSDATA`
+    *   `bili_jct`
 
-To upload images, the server needs to authenticate as you. This is done using your browser's cookies. You only need to do this once, and then use the `set_bilibili_cookies` tool.
+### 运行服务器
 
-> **Warning:** Your cookies are sensitive credentials. Treat them like passwords and never share them with anyone.
-
-1.  **Log in to Bilibili**: Open your web browser and log in to [www.bilibili.com](https://www.bilibili.com).
-2.  **Open Developer Tools**: Press `F12` (or `Cmd+Option+I` on Mac) to open the developer tools.
-3.  **Navigate to Cookies**:
-    -   In Chrome/Edge: Go to the `Application` tab.
-    -   In Firefox: Go to the `Storage` tab.
-4.  **Find the Cookies**: In the left-hand menu, expand "Cookies" and select `https://www.bilibili.com`.
-5.  **Copy the Values**: Find the following two cookies and copy their "Value" fields:
-    -   `SESSDATA`
-    -   `bili_jct`
-
-You will use these values in the `set_bilibili_cookies` tool after starting the server.
-
-## ⚡️ Usage
-
-### Step 1: Run the Server
-
-Open your terminal in the same directory as the `bilibili_uploader.py` file and run the server:
-
+在 `bilibili_uploader.py` 文件所在的目录打开终端，启动服务器：
 ```bash
 python bilibili_uploader.py
 ```
+服务器启动后将等待客户端连接。
 
-The server is now running and waiting for a client to connect.
+### 连接到MCP客户端 (以Claude for Desktop为例)
 
-### Step 2: Connect to an MCP Client
+1.  找到并打开 `claude_desktop_config.json` 配置文件：
+    *   **macOS**: `~/Library/Application Support/Claude/claude_desktop_config.json`
+    *   **Windows**: `%APPDATA%\Claude\claude_desktop_config.json`
 
-You need to connect this server to an MCP client. The example below is for Claude for Desktop.
-
-1.  **Open Claude for Desktop Configuration**: Find and open the `claude_desktop_config.json` file.
-    -   **macOS**: `~/Library/Application Support/Claude/claude_desktop_config.json`
-    -   **Windows**: `%APPDATA%\Claude\claude_desktop_config.json`
-
-2.  **Add the Server Configuration**: Add the following JSON snippet to the file. **Make sure to replace `/path/to/your/project/bilibili_uploader.py` with the absolute path** to your script.
+2.  在文件中添加以下服务器配置。**务必将路径替换为你 `bilibili_uploader.py` 脚本的绝对路径**。
 
     ```json
     {
@@ -86,57 +69,16 @@ You need to connect this server to an MCP client. The example below is for Claud
     }
     ```
 
-3.  **Restart Claude for Desktop**: Completely close and restart the application for the changes to take effect.
+3.  完全关闭并重启Claude for Desktop使配置生效。
 
-### Step 3: Authenticate in the Chat
+### 在对话中使用
 
-Before you can upload, you must provide your cookies to the server using the `set_bilibili_cookies` tool. You can do this by asking the LLM in your chat interface.
+现在，你可以在客户端中通过与LLM对话来使用上传功能。
 
-**Example Prompt:**
+**第一步：设置Cookies（每个会话只需一次）**
+> 请设置我的Bilibili Cookies。我的SESSDATA是 `your_sessdata_value_here`，bili_jct是 `your_bili_jct_value_here`。
 
-> Please set my Bilibili cookies. My SESSDATA is `your_sessdata_value_here` and my bili_jct is `your_bili_jct_value_here`.
+**第二步：上传图片**
+> 请把 `/Users/me/Desktop/photo.png` 这张图片上传到Bilibili。
 
-The LLM will call the tool, and you will see a confirmation message.
-
-### Step 4: Upload an Image
-
-Now you can ask the LLM to upload an image.
-
-**Example Prompt:**
-
-> Please upload the image located at `/Users/myuser/Desktop/my_awesome_photo.png` to Bilibili.
-
-The LLM will call the `upload_image` tool, and if successful, it will return the direct URL to the uploaded image.
-
-## 🛠️ Tool Reference
-
-This server exposes the following tools to the LLM:
-
-### `set_bilibili_cookies`
-
-Sets the authentication cookies required for all upload operations.
-
--   **Arguments**:
-    -   `sessdata` (string, required): The `SESSDATA` cookie value.
-    -   `bili_jct` (string, required): The `bili_jct` cookie value, which acts as a CSRF token.
--   **Returns**:
-    -   A string confirming that the cookies were set successfully.
-
-### `upload_image`
-
-Uploads a local image file to Bilibili's hosting service.
-
--   **Arguments**:
-    -   `file_path` (string, required): The **absolute path** to the image file on your local machine.
--   **Returns**:
-    -   A string containing the direct HTTPS URL of the uploaded image, or an error message if the upload failed.
-
-## ⚠️ Disclaimer
-
--   This is an unofficial tool and is not affiliated with Bilibili.
--   The server relies on Bilibili's internal APIs, which may change at any time without notice, potentially breaking this tool.
--   You are responsible for the security of your own account. **Do not share your `SESSDATA` cookie with anyone.**
-
-## 📄 License
-
-This project is licensed under the MIT License. See the `LICENSE` file for details.
+LLM将调用工具完成上传，并返回图片的永久HTTPS链接。
