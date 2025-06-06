@@ -1,7 +1,3 @@
-Of course! Here is a comprehensive `README.md` for your Bilibili Uploader MCP server.
-
----
-
 # Bilibili Uploader MCP Server
 
 ![Python Version](https://img.shields.io/badge/python-3.8+-blue.svg)
